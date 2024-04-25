@@ -1,0 +1,71 @@
+install.packages("readr")
+install.packages("dplyr")
+install.packages("ggplot2")
+install.packages("tidyr")
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+
+df1 <- read_csv('unicef_indicator_1.csv')
+df2 <- read_csv('unicef_indicator_2.csv')
+
+head(df1)
+n_distinct(df1$country)
+head(df2)
+unique(df2$time_period)
+
+Map
+
+year_counts <- table(df1$time_period)
+print(year_counts)
+
+school_rate_2019 <- df1 %>%
+  filter(time_period == 2019 & sex == 'Total')
+
+library(plotly)
+fig <- px::plot_geo(school_rate_2019,
+                    locations = ~country,
+                    color = ~obs_value,
+                    hover_name = ~country,
+                    color_continuous_scale = 'Plasma',
+                    title = 'Out-of-school rate for children of primary school age in 2019')
+fig
+
+Bar Chart
+
+school_rate_2020 <- df1 %>%
+  filter(time_period == 2020 & sex == 'Total')
+
+library(ggplot2)
+ggplot(school_rate_2020, aes(x = country, y = obs_value)) +
+  geom_bar(stat = 'identity', fill = 'skyblue') +
+  labs(x = 'Country', y = 'Observed Value in %', title = 'Observed Value by Country') +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+Regression Line
+
+mosquito_evolution <- df2 %>%
+  filter(country == 'Zambia')
+
+x <- mosquito_evolution$time_period
+y <- mosquito_evolution$obs_value
+
+model <- lm(y ~ x)
+
+predictions <- predict(model)
+
+plot(x, y, col = 'blue', main = 'Mosquito Evolution in Zambia', xlab = 'Year', ylab = 'Observed Value')
+abline(model, col = 'red')
+
+TimeSeries
+
+country_counts <- table(df2$country)
+print(country_counts)
+
+mosquito_rate_ts <- df2 %>%
+  filter(country == 'Senegal')
+
+mosquito_rate_ts$time_period <- as.Date(mosquito_rate_ts$time_period)
+
+head(mosquito_rate_ts)
